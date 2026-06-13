@@ -18,7 +18,6 @@ import { formatDate } from "@/lib/utils";
 import { useApi, useApiMutation } from "@/hooks/useApi";
 import { customerAPI, invoicesAPI, ordersAPI, girviAPI, repairsAPI } from "@/lib/api";
 import { inr, calcItem, type Invoice, type Order, type Girvi, type Repair, useLocalState, useDebounce } from "@/lib/storage";
-import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import { InvoiceTerms, ShopHeader } from "@/components/InvoiceBranding";
 
@@ -283,7 +282,19 @@ export default function CustomersPage() {
       customerId: cid,
       customerName: cName,
       customerMobile: cPhone,
-      items: [{ productId: "manual", name: manualDue.itemName ? `Manual Due: ${manualDue.itemName}` : "Manual Due", purity: manualDue.purity || "-", netWeight: Number(manualDue.netWeight) || 0, ratePerGram: Number(manualDue.ratePerGram) || 0, makingCharge: Number(manualDue.makingCharge) || 0, stoneCharge: 0, makingChargePct: 0, gstPct: 0, qty: 1 }],
+      items: [{ 
+        name: manualDue.itemName ? `Manual Due: ${manualDue.itemName}` : "Manual Due", 
+        purity: manualDue.purity || "-", 
+        netWeight: Number(manualDue.netWeight) || 0, 
+        ratePerGram: Number(manualDue.ratePerGram) || 0, 
+        makingCharge: Number(manualDue.makingCharge) || 0, 
+        stoneCharge: 0, 
+        makingChargePct: 0, 
+        gstPct: 0, 
+        qty: 1,
+        grossWeight: Number(manualDue.netWeight) || 0,
+        stoneWeight: 0
+      }],
       discount: 0,
       oldGoldAmount: 0,
       paymentMode: "Cash",
@@ -1129,7 +1140,7 @@ export default function CustomersPage() {
               <h3 className="font-semibold text-primary">3. Financials</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <F label="Date *">
-                  <DatePicker value={manualDue.date} onChange={v => setManualDue({...manualDue, date: v})} className="w-full bg-background" />
+                  <Input type="date" value={manualDue.date} onChange={e => setManualDue({...manualDue, date: e.target.value})} className="w-full bg-background" />
                 </F>
                 <F label="Due Amount (₹) *">
                   <Input className="bg-background font-medium text-lg text-rose-600" type="number" value={manualDue.dueAmount} onChange={e => setManualDue({...manualDue, dueAmount: e.target.value === "" ? "" : Number(e.target.value)})} />

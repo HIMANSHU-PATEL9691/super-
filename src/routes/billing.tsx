@@ -396,7 +396,11 @@ export default function BillingPage() {
       
       const gw = rest.grossWeight !== undefined ? rest.grossWeight : rest.netWeight;
       const sw = rest.stoneWeight || 0;
-      return { ...rest, productId: validPid, grossWeight: gw, stoneWeight: sw };
+      const cleaned = { ...rest, grossWeight: gw, stoneWeight: sw };
+      if (validPid) {
+        cleaned.productId = validPid;
+      }
+      return cleaned;
     });
 
     let cleanPayments = initialPayment;

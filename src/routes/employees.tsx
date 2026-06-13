@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Search, Briefcase, IndianRupee, Users } from "lucide-react";
 import { inr } from "@/lib/storage";
 import { formatDate } from "@/lib/utils";
-import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import { useApi, useApiMutation } from "@/hooks/useApi";
 import { employeesAPI } from "@/lib/api";
@@ -178,7 +177,7 @@ export default function EmployeesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Join Date</Label>
-                  <DatePicker value={form.joinDate} onChange={(v) => setForm({ ...form, joinDate: v })} className="w-full" />
+                  <Input type="date" value={form.joinDate} onChange={(e) => setForm({ ...form, joinDate: e.target.value })} className="w-full" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Status</Label>

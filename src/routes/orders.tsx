@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { useApi, useApiMutation } from "@/hooks/useApi";
 import { ordersAPI, customerAPI, karigarsAPI } from "@/lib/api";
 import { Plus, Trash2, ShoppingBag, Pencil, Printer, Search } from "lucide-react";
 import { toast } from "sonner";
-import { DatePicker } from "@/components/ui/date-picker";
 import { InvoiceTerms, ShopHeader } from "@/components/InvoiceBranding";
 
 export default function OrdersPage() {
@@ -58,6 +57,19 @@ export default function OrdersPage() {
     authorizedSignatory: "",
   };
   const [form, setForm] = useState<Order>(empty);
+  const [shopProfile, setShopProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (authUser?.tenantId) {
+      let API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      API_BASE_URL = API_BASE_URL.replace("localhost", "127.0.0.1");
+      const url = API_BASE_URL.endsWith('/api') ? `${API_BASE_URL}/tenants/${authUser.tenantId}` : `${API_BASE_URL}/api/tenants/${authUser.tenantId}`;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => setShopProfile(data))
+        .catch(console.error);
+    }
+  }, [authUser?.tenantId]);
 
   const save = async () => {
     if (!form.itemDescription) return;
@@ -405,22 +417,19 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      {viewingReceipt && <OrderInvoiceModal order={viewingReceipt} authUser={authUser} onClose={() => setViewingReceipt(null)} />}
+      {viewingReceipt && <OrderInvoiceModal order={viewingReceipt} shopProfile={shopProfile} onClose={() => setViewingReceipt(null)} />}
     </Layout>
   );
 }
 
 function Field({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
-  if (type === "date") {
-    return <div className="space-y-1.5"><Label className="text-xs">{label}</Label><DatePicker value={v} onChange={on} className="w-full h-9" /></div>;
-  }
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label><Input type={type} value={v} onChange={e => on(e.target.value)} /></div>;
 }
 function Stat({ label, value }: { label: string; value: string | number }) {
   return <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground">{label}</div><div className="text-2xl font-display mt-1">{value}</div></CardContent></Card>;
 }
 
-function OrderInvoiceModal({ order, authUser, onClose }: { order: Order; authUser: any; onClose: () => void }) {
+function OrderInvoiceModal({ order, shopProfile, onClose }: { order: Order; shopProfile: any; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-100 bg-black/50 flex justify-center items-start p-2 sm:p-4 print:bg-white print:p-0 overflow-y-auto pointer-events-auto">
       <div className="bg-white w-full max-w-4xl rounded-lg shadow-xl print:shadow-none print:max-w-none text-slate-900 my-auto relative flex flex-col max-h-[95vh] print:max-h-none print:block">
@@ -518,7 +527,7 @@ function OrderInvoiceModal({ order, authUser, onClose }: { order: Order; authUse
               Customer Signature
             </div>
             <div className="normal-case tracking-normal font-normal text-left text-slate-800 order-1 sm:order-2 text-[10px]">
-              {authUser?.termsAndConditions ? <div className="whitespace-pre-wrap text-slate-600">{authUser.termsAndConditions}</div> : <InvoiceTerms compact />}
+              {shopProfile?.termsAndConditions ? <div className="whitespace-pre-wrap text-slate-600">{shopProfile.termsAndConditions}</div> : <InvoiceTerms compact />}
             </div>
             <div className="text-center order-3 sm:order-3">
               {order.authorizedSignatory ? (

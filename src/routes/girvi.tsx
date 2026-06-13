@@ -22,7 +22,6 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2, Printer, Pencil, Search, Image as ImageIcon, Wallet, Scale, Landmark, TrendingUp } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
-import { DatePicker } from "@/components/ui/date-picker";
 import { InvoiceTerms, ShopHeader } from "@/components/InvoiceBranding";
 
 function getElapsedDays(dateStr: string) {
@@ -456,7 +455,7 @@ export default function GirviPage() {
             <div className="space-y-3">
               <div>
                 <Label>Arrival Date</Label>
-                <DatePicker value={form.date} onChange={(v) => setForm({ ...form, date: v })} className="w-full" />
+                <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>

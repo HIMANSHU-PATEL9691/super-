@@ -2,11 +2,11 @@ import { useState, useMemo } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useApi } from "@/hooks/useApi";
 import { customerAPI, expensesAPI, invoicesAPI, ordersAPI, repairsAPI, purchasesAPI } from "@/lib/api";
 import { inr, type Customer, type Expense, type Invoice, type Order, type Repair, type Purchase, useLocalState } from "@/lib/storage";
 import { BookOpen, ArrowDownLeft, ArrowUpRight, Users, Wrench, ShoppingBag, Receipt, Wallet, Package } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 
 export default function LedgerPage() {
   const [authUser] = useLocalState<any>("ajms.auth", null);
@@ -84,9 +84,10 @@ export default function LedgerPage() {
         </div>
         <div className="space-y-1.5 w-full sm:w-auto">
           <Label className="text-xs">Select Date</Label>
-          <DatePicker 
+          <Input 
+            type="date"
             value={selectedDate} 
-            onChange={setSelectedDate} 
+            onChange={(e) => setSelectedDate(e.target.value)} 
             className="w-full sm:w-48 bg-background"
           />
         </div>

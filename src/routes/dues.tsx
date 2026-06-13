@@ -8,7 +8,6 @@ import { formatDate } from "@/lib/utils";
 import { useApi } from "@/hooks/useApi";
 import { invoicesAPI, supplierAPI } from "@/lib/api";
 import { Search, AlertCircle, MessageCircle, Scale, Building2, User, ExternalLink } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 
@@ -206,10 +205,11 @@ export default function DuesPage() {
           <Input className="pl-9 bg-background" placeholder="Search by customer name, mobile or invoice no" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <div className="flex items-center gap-2">
-          <DatePicker 
+          <Input 
+            type="date"
             value={dateFilter} 
-            onChange={setDateFilter} 
-            className="w-40 bg-background"
+            onChange={(e) => setDateFilter(e.target.value)} 
+            className="w-40 bg-background h-9"
           />
           {dateFilter && (
             <Button variant="ghost" onClick={() => setDateFilter("")}>

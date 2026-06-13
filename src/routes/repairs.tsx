@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { useApi, useApiMutation } from "@/hooks/useApi";
 import { repairsAPI, karigarsAPI, customerAPI } from "@/lib/api";
 import { useLocalState } from "@/lib/storage";
 import { Plus, Trash2, Wrench, Pencil, Printer, Search } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import { InvoiceTerms, ShopHeader } from "@/components/InvoiceBranding";
 
@@ -31,6 +30,19 @@ export default function RepairsPage() {
   const [q, setQ] = useState("");
   const debouncedQ = useDebounce(q, 300);
   const [filter, setFilter] = useState<"All" | Repair["status"]>("All");
+  const [shopProfile, setShopProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (authUser?.tenantId) {
+      let API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      API_BASE_URL = API_BASE_URL.replace("localhost", "127.0.0.1");
+      const url = API_BASE_URL.endsWith('/api') ? `${API_BASE_URL}/tenants/${authUser.tenantId}` : `${API_BASE_URL}/api/tenants/${authUser.tenantId}`;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => setShopProfile(data))
+        .catch(console.error);
+    }
+  }, [authUser?.tenantId]);
 
   const { data = [], isLoading, error } = useApi<Repair[]>(["repairs"], () => repairsAPI.getAll());
   const { data: karigars = [] } = useApi<Karigar[]>(["karigars"], () => karigarsAPI.getAll());
@@ -406,22 +418,19 @@ export default function RepairsPage() {
         </CardContent>
       </Card>
 
-      {viewingReceipt && <RepairInvoiceModal repair={viewingReceipt} authUser={authUser} onClose={() => setViewingReceipt(null)} />}
+      {viewingReceipt && <RepairInvoiceModal repair={viewingReceipt} shopProfile={shopProfile} onClose={() => setViewingReceipt(null)} />}
     </Layout>
   );
 }
 
 function Field({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
-  if (type === "date") {
-    return <div className="space-y-1.5"><Label className="text-xs">{label}</Label><DatePicker value={v} onChange={on} className="w-full h-9" /></div>;
-  }
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label><Input type={type} value={v} onChange={(e) => on(e.target.value)} /></div>;
 }
 function Stat({ label, value }: { label: string; value: string | number }) {
   return <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground">{label}</div><div className="text-2xl font-display mt-1">{value}</div></CardContent></Card>;
 }
 
-function RepairInvoiceModal({ repair, authUser, onClose }: { repair: Repair; authUser: any; onClose: () => void }) {
+function RepairInvoiceModal({ repair, shopProfile, onClose }: { repair: Repair; shopProfile: any; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-100 bg-black/50 flex justify-center items-start p-2 sm:p-4 print:bg-white print:p-0 overflow-y-auto pointer-events-auto">
       <div className="bg-white w-full max-w-4xl rounded-lg shadow-xl print:shadow-none print:max-w-none text-slate-900 my-auto relative flex flex-col max-h-[95vh] print:max-h-none print:block">
@@ -500,7 +509,7 @@ function RepairInvoiceModal({ repair, authUser, onClose }: { repair: Repair; aut
               Customer Signature
             </div>
             <div className="normal-case tracking-normal font-normal text-left text-slate-800 order-1 sm:order-2 text-[10px]">
-              {authUser?.termsAndConditions ? <div className="whitespace-pre-wrap text-slate-600">{authUser.termsAndConditions}</div> : <InvoiceTerms compact />}
+              {shopProfile?.termsAndConditions ? <div className="whitespace-pre-wrap text-slate-600">{shopProfile.termsAndConditions}</div> : <InvoiceTerms compact />}
             </div>
             <div className="text-center order-3 sm:order-3">
               {repair.authorizedSignatory ? (

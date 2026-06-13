@@ -19,7 +19,6 @@ import { useApi, useApiMutation } from "@/hooks/useApi";
 import { expensesAPI } from "@/lib/api";
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 
 const CATEGORIES = ["Rent", "Salary", "Utilities", "Purchase", "Repair", "Marketing", "Misc"];
 
@@ -112,7 +111,7 @@ export default function ExpensesPage() {
             <div className="space-y-3">
               <div>
                 <Label>Date</Label>
-                <DatePicker value={form.date} onChange={(v) => setForm({ ...form, date: v })} className="w-full" />
+                <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full" />
               </div>
               <div>
                 <Label>Category</Label>
@@ -159,9 +158,10 @@ export default function ExpensesPage() {
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2">
             <CardTitle className="font-display">Records</CardTitle>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-              <DatePicker 
+              <Input 
+                type="date"
                 value={dateFilter} 
-                onChange={setDateFilter} 
+                onChange={(e) => setDateFilter(e.target.value)} 
                 className="w-full sm:w-40 bg-background h-9"
               />
               {dateFilter && (

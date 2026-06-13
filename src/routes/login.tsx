@@ -48,14 +48,7 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
             onLogin({ 
               role: data.role, 
               tenantId: data._id, 
-              shopName: data.shopName,
-              logo: data.logo,
-              phone: data.phone,
-              phone2: data.phone2,
-              email: data.email,
-              address: data.address,
-              gstNo: data.gstNo,
-              termsAndConditions: data.termsAndConditions
+              shopName: data.shopName
             });
           } else {
             // Explicitly handle 403 (Forbidden) access restrictions

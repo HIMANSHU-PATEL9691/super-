@@ -10,7 +10,6 @@ import { formatDate } from "@/lib/utils";
 import { useApi } from "@/hooks/useApi";
 import { invoicesAPI, purchasesAPI, customerAPI, supplierAPI } from "@/lib/api";
 import { Download, FileText } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 
 export default function GstReportPage() {
   const { data: invoices = [], isLoading } = useApi<Invoice[]>(["invoices"], () => invoicesAPI.getAll());
@@ -181,7 +180,7 @@ export default function GstReportPage() {
           <div className="space-y-1.5 w-full sm:w-auto">
             <Label className="text-xs">Select Period</Label>
             {reportType === "Daily" ? (
-              <DatePicker value={selectedDate} onChange={setSelectedDate} className="w-full sm:w-48 bg-background" />
+              <Input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="w-full sm:w-48 bg-background h-9" />
             ) : (
               <Input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="w-full sm:w-48 bg-background h-9" />
             )}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,51 @@ import { Store, Image as ImageIcon, Loader2 } from "lucide-react";
 export default function SettingsPage() {
   const [authUser, setAuthUser] = useLocalState<any>("ajms.auth", null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [form, setForm] = useState({
-    shopName: authUser?.shopName || "",
-    phone: authUser?.phone || "",
-    phone2: authUser?.phone2 || "",
-    email: authUser?.email || "",
-    address: authUser?.address || "",
-    gstNo: authUser?.gstNo || "",
-    logo: authUser?.logo || "",
-    termsAndConditions: authUser?.termsAndConditions || "",
+    shopName: "",
+    phone: "",
+    phone2: "",
+    email: "",
+    address: "",
+    gstNo: "",
+    logo: "",
+    termsAndConditions: "",
   });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!authUser?.tenantId) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace('localhost', '127.0.0.1');
+        const url = `${API_BASE_URL}/tenants/${authUser.tenantId}`;
+        
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          setForm({
+            shopName: data.shopName || "",
+            phone: data.phone || "",
+            phone2: data.phone2 || "",
+            email: data.email || "",
+            address: data.address || "",
+            gstNo: data.gstNo || "",
+            logo: data.logo || "",
+            termsAndConditions: data.termsAndConditions || "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch tenant profile", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [authUser?.tenantId]);
 
   const handleImageChange = (file?: File) => {
     if (!file) return;
@@ -62,9 +96,8 @@ export default function SettingsPage() {
     
     console.log("[Settings] Attempting to save profile. Payload:", form);
     try {
-      let baseUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
-      baseUrl = baseUrl.replace("localhost", "127.0.0.1"); // Force IPv4 resolution
-      const url = `${baseUrl}/tenants/${authUser.tenantId}`;
+      const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace('localhost', '127.0.0.1');
+      const url = `${API_BASE_URL}/tenants/${authUser.tenantId}`;
       console.log("[Settings] Sending PUT request to:", url);
 
       const res = await fetch(url, {
@@ -83,13 +116,6 @@ export default function SettingsPage() {
         setAuthUser({
           ...authUser,
           shopName: updatedTenant.shopName,
-          phone: updatedTenant.phone,
-          phone2: updatedTenant.phone2,
-          email: updatedTenant.email,
-          address: updatedTenant.address,
-          gstNo: updatedTenant.gstNo,
-          logo: updatedTenant.logo,
-          termsAndConditions: updatedTenant.termsAndConditions
         });
         toast.success("Shop profile updated successfully!");
       } else {
@@ -119,7 +145,13 @@ export default function SettingsPage() {
             <CardDescription>This information will appear on all your invoices and receipts.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            
+            {isLoading ? (
+              <div className="py-10 text-center text-muted-foreground flex flex-col items-center">
+                <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary" />
+                Loading profile from database...
+              </div>
+            ) : (
+              <>
             <div>
               <Label className="mb-2 block">Shop Logo</Label>
               <div className="flex items-center gap-6">
@@ -148,6 +180,8 @@ export default function SettingsPage() {
             <div className="border-t pt-4 flex justify-end">
               <Button size="lg" onClick={saveProfile} disabled={isSaving}>{isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Saving...</> : "Save Profile"}</Button>
             </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

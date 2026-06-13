@@ -12,7 +12,6 @@ import { useApi, useApiMutation } from "@/hooks/useApi";
 import { supplierAPI } from "@/lib/api";
 import { Plus, Trash2, Pencil, Search, Loader2, BookOpen } from "lucide-react";
 import { toast } from "sonner";
-import { DatePicker } from "@/components/ui/date-picker";
 
 interface SupplierTransaction {
   id?: string;
@@ -465,9 +464,10 @@ export default function SuppliersPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Date</Label>
-                    <DatePicker 
+                    <Input 
+                      type="date"
                       value={txForm.date} 
-                      onChange={v => setTxForm({...txForm, date: v})} 
+                      onChange={e => setTxForm({...txForm, date: e.target.value})} 
                       className="w-full bg-background shadow-sm h-9" 
                     />
                   </div>
@@ -488,9 +488,10 @@ export default function SuppliersPage() {
                   <BookOpen className="w-5 h-5 text-primary" /> Transaction History
                 </h3>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <DatePicker 
+                  <Input 
+                    type="date"
                     value={txSearchDate} 
-                    onChange={v => { setTxSearchDate(v); setGoldPage(1); setSilverPage(1); }} 
+                    onChange={e => { setTxSearchDate(e.target.value); setGoldPage(1); setSilverPage(1); }} 
                     className="w-full sm:w-40 bg-background h-9"
                   />
                   {txSearchDate && (

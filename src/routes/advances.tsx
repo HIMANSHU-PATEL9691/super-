@@ -21,7 +21,6 @@ import { useApi, useApiMutation } from "@/hooks/useApi";
 import { advancesAPI, customerAPI } from "@/lib/api";
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 
 export default function AdvancePage() {
@@ -140,7 +139,7 @@ export default function AdvancePage() {
             <div className="space-y-3">
               <div>
                 <Label>Date</Label>
-                <DatePicker value={form.date} onChange={(v) => setForm({ ...form, date: v })} className="w-full" />
+                <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full" />
               </div>
 
               <div className="col-span-2 grid grid-cols-2 gap-3">

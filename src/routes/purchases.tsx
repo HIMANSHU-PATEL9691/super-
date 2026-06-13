@@ -11,7 +11,6 @@ import { formatDate } from "@/lib/utils";
 import { useApi, useApiMutation } from "@/hooks/useApi";
 import { purchasesAPI, supplierAPI } from "@/lib/api";
 import { Plus, Trash2, ShoppingBag } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 
 function calcTaxable(p: Purchase) {
   return (Number(p.weight) || 0) * (Number(p.ratePerGram) || 0) + (Number(p.makingCharge) || 0);
@@ -180,9 +179,6 @@ export default function PurchasesPage() {
 }
 
 function Field({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
-  if (type === "date") {
-    return <div className="space-y-1.5"><Label className="text-xs">{label}</Label><DatePicker value={v} onChange={on} className="w-full h-9" /></div>;
-  }
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label><Input type={type} value={v} onChange={e => on(e.target.value)} /></div>;
 }
 function Stat({ label, value }: { label: string; value: string | number }) {

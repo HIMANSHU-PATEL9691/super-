@@ -6,6 +6,19 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api
 
 // Helper function for API calls
 const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+  // Attach tenant id from localStorage for tenant-specific DB isolation
+  let tenantId: string | null = null;
+  try {
+    const raw = localStorage.getItem('ajms.auth');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      tenantId = parsed?.tenantId ?? null;
+    }
+  } catch {}
+
+  const extraHeaders: Record<string, string> = {};
+  if (tenantId) extraHeaders['x-tenant-id'] = tenantId;
+
   // Ensure the final URL is correctly formed, especially if VITE_API_URL is just a base domain.
   const url = `${API_BASE_URL}${endpoint}`;
   
@@ -16,6 +29,7 @@ const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
+        ...extraHeaders,
         ...options.headers,
       },
       ...options,

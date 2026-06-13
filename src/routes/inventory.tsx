@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useRef, useMemo } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Pencil, Search, Image as ImageIcon, Upload, Filter } from "lucide-react";
-import { useLocalState, uid, type Product, useDebounce } from "@/lib/storage";
+import { uid, type Product, useDebounce } from "@/lib/storage";
 import { useApi, useApiMutation } from "@/hooks/useApi";
 import { inventoryAPI } from "@/lib/api";
 import { toast } from "sonner";
@@ -60,8 +60,6 @@ export default function InventoryPage() {
   }, ["inventory"]);
   const deleteMutation = useApiMutation((id: string) => inventoryAPI.delete(id), ["inventory"]);
 
-  const [categories, setCategories] = useLocalState<string[]>("ajms.categories", ["Gold", "Silver", "Diamond", "Platinum", "Coin"]);
-  const [subcategories, setSubcategories] = useLocalState<Record<string, string[]>>("ajms.subcategories", {});
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Product>(empty);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -79,6 +77,37 @@ export default function InventoryPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const products = useMemo(() => (Array.isArray(allItems) ? allItems : []), [allItems]);
+
+  const dbCategories = useMemo(() => {
+    const cats = new Set(["Gold", "Silver", "Diamond", "Platinum", "Coin"]);
+    products.forEach(p => p.category && cats.add(p.category));
+    return Array.from(cats);
+  }, [products]);
+
+  const dbSubcategories = useMemo(() => {
+    const subs: Record<string, Set<string>> = {};
+    products.forEach(p => {
+      if (p.category && p.subcategory) {
+        if (!subs[p.category]) subs[p.category] = new Set();
+        subs[p.category].add(p.subcategory);
+      }
+    });
+    const result: Record<string, string[]> = {};
+    Object.keys(subs).forEach(k => result[k] = Array.from(subs[k]));
+    return result;
+  }, [products]);
+
+  const [sessionCats, setSessionCats] = useState<string[]>([]);
+  const [sessionSubs, setSessionSubs] = useState<Record<string, string[]>>({});
+
+  const categories = useMemo(() => Array.from(new Set([...dbCategories, ...sessionCats])), [dbCategories, sessionCats]);
+  const subcategories = useMemo(() => {
+    const result = { ...dbSubcategories };
+    Object.keys(sessionSubs).forEach(k => {
+      result[k] = Array.from(new Set([...(result[k] || []), ...sessionSubs[k]]));
+    });
+    return result;
+  }, [dbSubcategories, sessionSubs]);
 
   const filtered = products.filter(
     (p) =>
@@ -229,7 +258,7 @@ export default function InventoryPage() {
   const addCategory = () => {
     const c = newCat.trim();
     if (!c) return;
-    if (!categories.includes(c)) setCategories((p) => [...p, c]);
+    if (!categories.includes(c)) setSessionCats((p) => [...p, c]);
     setDraft((d) => ({ ...d, category: c }));
     setNewCat("");
     setAddCatOpen(false);
@@ -238,9 +267,9 @@ export default function InventoryPage() {
   const addSubcategory = () => {
     const s = newSub.trim();
     if (!s || !draft.category) return;
-    setSubcategories((prev) => {
-      const map = { ...(prev || {}) } as Record<string, string[]>;
-      map[draft.category] = Array.from(new Set([...(map[draft.category] || []), s]));
+    setSessionSubs((prev) => {
+      const map = { ...prev };
+      map[draft.category!] = Array.from(new Set([...(map[draft.category!] || []), s]));
       return map;
     });
     setDraft((d) => ({ ...d, subcategory: s }));

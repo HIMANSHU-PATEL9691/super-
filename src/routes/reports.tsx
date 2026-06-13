@@ -7,9 +7,9 @@ import { useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useApi } from "@/hooks/useApi";
 import { invoicesAPI, expensesAPI, supplierAPI } from "@/lib/api";
-import { DatePicker } from "@/components/ui/date-picker";
 
 export default function ReportsPage() {
   const [authUser] = useLocalState<any>("ajms.auth", null);
@@ -140,9 +140,10 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-end w-full sm:w-auto gap-4">
           <div className="space-y-1.5 w-full sm:w-auto">
             <Label className="text-xs">Select Date</Label>
-            <DatePicker 
+            <Input 
+              type="date"
               value={selectedDate} 
-              onChange={setSelectedDate} 
+              onChange={(e) => setSelectedDate(e.target.value)} 
               className="w-full sm:w-48 bg-background"
             />
           </div>
