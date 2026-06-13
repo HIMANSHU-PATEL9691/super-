@@ -42,14 +42,6 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
           try { data = await response.json(); } catch (e) { data = {}; }
 
           if (response.ok) {
-            if (data.status === "Pending") {
-              toast.error("Your account is pending approval by the Super Admin.", { duration: 4000 });
-              return;
-            }
-            if (data.status === "Inactive") {
-              toast.error("Your subscription is inactive. Please contact support.");
-              return;
-            }
             console.log("[Login] Shop login successful. Payload:", data);
 
             toast.success(`Welcome back, ${data.shopName}!`);
@@ -66,11 +58,19 @@ export default function LoginPage({ onLogin }: { onLogin: (user: any) => void })
               termsAndConditions: data.termsAndConditions
             });
           } else {
-            if (data.status === "Pending") {
-              toast.error("Your account is pending approval by the Super Admin.", { duration: 4000 });
-              return;
+            // Explicitly handle 403 (Forbidden) access restrictions
+            if (response.status === 403) {
+              if (data.status === "Pending" || (data.error && data.error.includes("pending"))) {
+                toast.error("Your account is pending approval by the Super Admin.", { duration: 5000 });
+              } else {
+                toast.error(data.error || "Your subscription is inactive. Please contact support.", { duration: 5000 });
+              }
+            } else if (response.status === 401) {
+              toast.error(data.error || "Invalid credentials", { duration: 5000 });
+            } else {
+              toast.error(data.error || `Login failed with status ${response.status}`, { duration: 5000 });
             }
-            throw new Error(data.error || "Invalid credentials");
+            return;
           }
         } catch (fetchError) {
           // Fallback during transition if backend isn't connected yet

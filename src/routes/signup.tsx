@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
     shopName: "",
+    phone: "",
     adminUsername: "",
     adminPassword: "",
     operatorUsername: "",
@@ -84,9 +85,15 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-6">
-            <div className="space-y-2">
-              <Label>Shop Name</Label>
-              <Input required placeholder="e.g. Royal Jewellers" value={form.shopName} onChange={e => setForm({...form, shopName: e.target.value})} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Shop Name</Label>
+                <Input required placeholder="e.g. Royal Jewellers" value={form.shopName} onChange={e => setForm({...form, shopName: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label>Phone Number</Label>
+                <Input required placeholder="e.g. 9876543210" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border border-border/50">

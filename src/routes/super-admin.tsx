@@ -78,8 +78,8 @@ export default function SuperAdminPage() {
   }, []);
 
   const save = async () => {
-    if (!form.shopName || !form.adminUsername || !form.adminPassword || !form.operatorUsername || !form.operatorPassword) {
-      toast.error("Shop Name and both sets of credentials are required.");
+    if (!form.shopName || !form.phone || !form.adminUsername || !form.adminPassword || !form.operatorUsername || !form.operatorPassword) {
+      toast.error("Shop Name, Phone Number, and both sets of credentials are required.");
       return;
     }
 
@@ -130,24 +130,47 @@ export default function SuperAdminPage() {
     }
   };
 
-  const approveShop = async (id: string) => {
+  const [approveValidUntil, setApproveValidUntil] = useState<string>(() => new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10));
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
+
+  const requestApproveShop = (id: string) => {
+    setApproveTargetId(id);
+    setApproveValidUntil(new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10));
+    setApproveDialogOpen(true);
+  };
+
+  const approveShop = async () => {
+    if (!approveTargetId) return;
+    if (!approveValidUntil) {
+      toast.error("Valid Until date is required.");
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
+      const res = await fetch(`${API_URL}/${approveTargetId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Active" })
+        body: JSON.stringify({
+          status: "Active",
+          validUntil: approveValidUntil,
+        })
       });
-      
+
       if (res.ok) {
         toast.success("Shop approved successfully!");
+        setApproveDialogOpen(false);
+        setApproveTargetId(null);
         fetchTenants();
       } else {
-        toast.error("Failed to approve shop");
+        const data = await res.text().catch(() => "");
+        toast.error(data ? "Failed to approve shop" : "Failed to approve shop");
       }
-    } catch (e) {
+    } catch {
       toast.error("Network error.");
     }
   };
+
 
   const logout = () => {
     localStorage.removeItem("ajms.auth");
@@ -231,12 +254,12 @@ export default function SuperAdminPage() {
               <div className="space-y-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <Label className="text-sm">Shop Name</Label>
-                    <Input value={form.shopName} onChange={e => setForm({...form, shopName: e.target.value})} placeholder="e.g. Royal Jewellers" className="h-10 text-lg" />
+                    <Label className="text-sm">Shop Name *</Label>
+                    <Input value={form.shopName} onChange={e => setForm({...form, shopName: e.target.value})} placeholder="e.g. Royal Jewellers" className="h-10 text-lg" required />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm">Phone Number</Label>
-                    <Input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="e.g. 9876543210" className="h-10 text-lg" />
+                    <Label className="text-sm">Phone Number *</Label>
+                    <Input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="e.g. 9876543210" className="h-10 text-lg" required />
                   </div>
                 </div>
                 
@@ -356,10 +379,16 @@ export default function SuperAdminPage() {
                       </td>
                       <td className="p-4 text-right flex justify-end gap-1">
                         {t.status === 'Pending' && (
-                          <Button size="icon" variant="ghost" onClick={() => approveShop(t._id)} title="Approve Shop">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => requestApproveShop(t._id)}
+                            title="Approve Shop"
+                          >
                             <CheckCircle2 className="w-5 h-5 text-green-600 hover:text-green-700" />
                           </Button>
                         )}
+
                         <Button size="icon" variant="ghost" onClick={() => { 
                           setEditingId(t._id); 
                           setForm({ 
@@ -384,6 +413,45 @@ export default function SuperAdminPage() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Approve shop dialog (requires Valid Until) */}
+              <Dialog open={approveDialogOpen} onOpenChange={(val) => {
+                setApproveDialogOpen(val);
+                if (!val) {
+                  setApproveTargetId(null);
+                }
+              }}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-display">Approve Shop</DialogTitle>
+                  </DialogHeader>
+
+                  <div className="space-y-4 py-2">
+                    <div className="space-y-1.5">
+                      <Label>Valid Until *</Label>
+                      <Input
+                        type="date"
+                        className="h-10"
+                        value={approveValidUntil}
+                        onChange={(e) => setApproveValidUntil(e.target.value)}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      After approval, shop status will be set to <b>Active</b> and Valid Until will be reset to this date.
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={approveShop}>
+                      Approve
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
               </div>
             )}
           </CardContent>
@@ -392,3 +460,4 @@ export default function SuperAdminPage() {
     </div>
   );
 }
+

@@ -2,6 +2,8 @@ import React, { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useLocalState } from "./lib/storage";
 import { Loader2 } from "lucide-react";
+import { Toaster } from "sonner";
+
 
 const Dashboard = React.lazy(() => import("./routes/index"));
 const BillingPage = React.lazy(() => import("./routes/billing"));
@@ -41,6 +43,7 @@ export default function App() {
   if (!authUser) {
     return (
       <BrowserRouter>
+        <Toaster richColors position="top-right" />
         <Suspense fallback={fallback}>
           <Routes>
             <Route path="/super-admin-login" element={<SuperAdminLoginPage onLogin={(user) => setAuthUser(user)} />} />
@@ -52,10 +55,12 @@ export default function App() {
     );
   }
 
+
   // STRIKED DOWN KARIGAR ROUTE
   if (authUser.role === "karigar") {
     return (
       <BrowserRouter>
+        <Toaster richColors position="top-right" />
         <Suspense fallback={fallback}>
         <Routes>
           <Route path="/karigar-tasks" element={<KarigarTasksPage />} />
@@ -66,10 +71,12 @@ export default function App() {
     );
   }
 
+
   // SUPER ADMIN ROUTE
   if (authUser.role === "superadmin") {
     return (
       <BrowserRouter>
+        <Toaster richColors position="top-right" />
         <Suspense fallback={fallback}>
           <Routes>
             <Route path="/super-admin" element={<SuperAdminPage />} />
@@ -82,7 +89,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <Toaster richColors position="top-right" />
       <Suspense fallback={fallback}>
+
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/billing" element={<BillingPage />} />
